@@ -25,6 +25,8 @@ npm run dev
 
 Open the local URL Vite prints in the terminal (usually `http://localhost:5173`).
 
+Legacy Invitational website deployment update
+
 ## Important before public use
 This is a prototype. Roster and contact-form submissions are stored in the current browser only and will not sync between phones or computers. The demo admin credential check runs in the browser and is not secure authentication. Before collecting real guest information publicly, configure shared server-side storage, secure authentication, access controls, and privacy protections. Do not use this local prototype as a production guest database.
 # legacy-invitational
