@@ -57,8 +57,6 @@ function Header({ admin, onAdmin, onExit }) {
 const FORM_STORAGE_KEY = 'golf-legacy-contact-forms-v1';
 
 const GUEST_TYPES = [
-  { id: 'celebrity', label: 'Celebrity / Guest', short: 'CELEBRITY', description: 'For celebrities and invited guests' },
-  { id: 'vip', label: 'VIP', short: 'VIP', description: 'For VIP guests and their representatives' },
   { id: 'general', label: 'Golf Participants', short: 'GOLF PARTICIPANTS', description: 'For golf participants' },
 ];
 
@@ -66,12 +64,8 @@ function GuestContactForm({ players, setPlayers, guestType, setGuestType, onCont
   const [values, setValues] = useState({});
   const [error, setError] = useState('');
   const update = (key, value) => setValues((current) => ({ ...current, [key]: value }));
-  const selectedType = GUEST_TYPES.find((type) => type.id === guestType) || GUEST_TYPES[2];
-  const contactMethodOptions = guestType === 'celebrity'
-    ? ['Manager', 'Agent', 'Assistant', 'Publicist', 'Self', 'Other']
-    : guestType === 'vip'
-      ? ['Me', 'My manager or agent', 'My assistant or representative', 'Someone else']
-      : ['Email', 'Call or text', 'Through my team captain or company'];
+  const selectedType = GUEST_TYPES.find((type) => type.id === guestType) || GUEST_TYPES[0];
+  const contactMethodOptions = ['Email', 'Call or text', 'Through my team captain or company'];
 
   const submit = (event) => {
     event.preventDefault();
@@ -83,25 +77,19 @@ function GuestContactForm({ players, setPlayers, guestType, setGuestType, onCont
       setError('Please complete all required fields and check the permission box.');
       return;
     }
-    if (guestType === 'celebrity' && (!values.contactPerson?.trim() || !values.contactRelationship)) {
-      setError('Please add the best contact person and their relationship.'); return;
-    }
-    if (guestType === 'vip' && (!values.invitationRecipient || !values.contactPerson?.trim())) {
-      setError('Please choose who should receive invitations and enter the contact person’s name.'); return;
-    }
-    if (guestType === 'general' && !values.contactPreference) {
+    if (!values.contactPreference) {
       setError('Please choose how you would prefer to be contacted.'); return;
     }
 
-    const company = guestType === 'vip' ? (values.organization || '') : guestType === 'general' ? (values.companyTeam || '') : '';
+    const company = values.companyTeam || '';
     const notes = JSON.stringify({ guestType: selectedType.label, ...values });
     const key = `${guestName.toLowerCase()}|${normalizePhone(values.phone || '')}`;
     let player = players.find((p) => `${p.name.toLowerCase()}|${normalizePhone(p.cell || '')}` === key);
     if (player) {
-      player = { ...player, company: company || player.company, email: email || player.email, cell: values.phone || player.cell, guestType: selectedType.label, vip: guestType === 'vip' || player.vip, vipLabel: guestType === 'vip' ? 'Yes' : (player.vipLabel || ''), contactForm: values };
+      player = { ...player, company: company || player.company, email: email || player.email, cell: values.phone || player.cell, guestType: selectedType.label, contactForm: values };
       setPlayers((current) => current.map((p) => p.id === player.id ? player : p));
     } else {
-      player = { id: makeId(), company, name: guestName, vip: guestType === 'vip', vipLabel: guestType === 'vip' ? 'Yes' : '', shirtSize: '', email, cell: values.phone || '', notes, guestType: selectedType.label, contactForm: values, checkedIn: false, checkedInAt: null };
+      player = { id: makeId(), company, name: guestName, vip: false, vipLabel: '', shirtSize: '', email, cell: values.phone || '', notes, guestType: selectedType.label, contactForm: values, checkedIn: false, checkedInAt: null };
       setPlayers((current) => [...current, player]);
     }
     try {
@@ -124,28 +112,9 @@ function GuestContactForm({ players, setPlayers, guestType, setGuestType, onCont
       <h1>Stay <em>connected.</em></h1><p>Choose your guest type and share the best contact information for future Foundation invitations. Then you can check in for today’s event.</p>
     </section>
     <section className="contact-card">
-      <div className="guest-tabs" role="tablist" aria-label="Guest type">
-        {GUEST_TYPES.map((type) => <button type="button" role="tab" aria-selected={guestType === type.id} className={`guest-tab ${guestType === type.id ? 'guest-tab-active' : ''}`} key={type.id} onClick={() => { setGuestType(type.id); setValues({}); setError(''); }}>
-          <strong>{type.label}</strong><span>{type.description}</span>
-        </button>)}
-      </div>
-      <div className="contact-form-heading"><span className="form-step">STEP 1 OF 2</span><h2>{guestType === 'celebrity' ? 'Celebrity & invited guest' : guestType === 'vip' ? 'VIP contact information' : 'Golf Participants'}</h2><p>Fields marked <b>*</b> are required. This takes about one minute.</p></div>
+      <div className="contact-form-heading"><span className="form-step">STEP 1 OF 2</span><h2>Golf Participants</h2><p>Fields marked <b>*</b> are required. This takes about one minute.</p></div>
       <form className="contact-form" onSubmit={submit}>
-        {guestType === 'celebrity' ? <>
-          {field('Your name (celebrity or invited guest)', 'guestName', { required: true, autoComplete: 'name' })}
-          {field('Best person to contact for future event invitations', 'contactPerson', { required: true, placeholder: 'You, manager, agent, assistant, or publicist' })}
-          {field('This person is my…', 'contactRelationship', { required: true, options: contactMethodOptions })}
-          {field('Best email address for invitations', 'email', { required: true, type: 'email', autoComplete: 'email' })}
-          {field('Phone number (optional)', 'phone', { type: 'tel', autoComplete: 'tel' })}
-        </> : guestType === 'vip' ? <>
-          {field('Your name', 'guestName', { required: true, autoComplete: 'name' })}
-          {field('Organization or affiliation (optional)', 'organization')}
-          {field('Who should receive future invitations?', 'invitationRecipient', { required: true, options: contactMethodOptions })}
-          {field('Name of the best contact person', 'contactPerson', { required: true, placeholder: 'You or your representative' })}
-          {field('Best email for future invitations', 'email', { required: true, type: 'email', autoComplete: 'email' })}
-          {field('Contact phone number (optional)', 'phone', { type: 'tel', autoComplete: 'tel' })}
-          {field('Preferred way to receive an invitation', 'contactPreference', { options: ['Email', 'Call or text', 'Through my representative'] })}
-        </> : <>
+        <>
           {field('Full name', 'guestName', { required: true, autoComplete: 'name' })}
           {field('Company or golf team (optional)', 'companyTeam')}
           {field('Best email address', 'email', { required: true, type: 'email', autoComplete: 'email' })}
@@ -155,8 +124,8 @@ function GuestContactForm({ players, setPlayers, guestType, setGuestType, onCont
           <fieldset className="interest-field"><legend>Which future opportunities would interest you? (optional)</legend>
             {['Legacy Golf Invitational', 'Poker Challenge and other fundraisers', 'Sponsorship opportunities', 'Volunteering and supporting G.I.F.T.4.S. Academy'].map((item) => <label key={item} className="checkbox-option"><input type="checkbox" checked={(values.interests || []).includes(item)} onChange={(e) => update('interests', e.target.checked ? [...(values.interests || []), item] : (values.interests || []).filter((value) => value !== item))} /><span>{item}</span></label>)}
           </fieldset>
-        </>}
-        <label className="consent-box"><input type="checkbox" checked={values.consent === true} onChange={(e) => update('consent', e.target.checked)} /><span>{guestType === 'celebrity' ? 'I confirm this is the appropriate contact and The Michael Finley Foundation may reach out about future event invitations.' : 'Yes, The Michael Finley Foundation may contact me or my designated representative about future events.'} <b>*</b></span></label>
+        </>
+        <label className="consent-box"><input type="checkbox" checked={values.consent === true} onChange={(e) => update('consent', e.target.checked)} /><span>Yes, The Michael Finley Foundation may contact me or my designated representative about future events. <b>*</b></span></label>
         {error && <div className="inline-error"><AlertCircle size={16} /> {error}</div>}
         <button className="primary-button wide-button" type="submit">Submit form & continue to check-in <ArrowRight size={17} /></button>
         <p className="form-privacy"><ShieldCheck size={15} /> Your details will be used for Foundation invitations and related event communication.</p>
