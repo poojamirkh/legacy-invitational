@@ -59,7 +59,7 @@ const FORM_STORAGE_KEY = 'golf-legacy-contact-forms-v1';
 const GUEST_TYPES = [
   { id: 'celebrity', label: 'Celebrity / Guest', short: 'CELEBRITY', description: 'For celebrities and invited guests' },
   { id: 'vip', label: 'VIP', short: 'VIP', description: 'For VIP guests and their representatives' },
-  { id: 'general', label: 'General Admission', short: 'GENERAL ADMISSION', description: 'For golfers and general guests' },
+  { id: 'general', label: 'Golf Participants', short: 'GOLF PARTICIPANTS', description: 'For golf participants' },
 ];
 
 function GuestContactForm({ players, setPlayers, guestType, setGuestType, onContinue }) {
