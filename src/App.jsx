@@ -129,7 +129,7 @@ function GuestContactForm({ players, setPlayers, guestType, setGuestType, onCont
           <strong>{type.label}</strong><span>{type.description}</span>
         </button>)}
       </div>
-      <div className="contact-form-heading"><span className="form-step">STEP 1 OF 2</span><h2>{guestType === 'celebrity' ? 'Celebrity & invited guest' : guestType === 'vip' ? 'VIP contact information' : 'Golfer & general admission'}</h2><p>Fields marked <b>*</b> are required. This takes about one minute.</p></div>
+      <div className="contact-form-heading"><span className="form-step">STEP 1 OF 2</span><h2>{guestType === 'celebrity' ? 'Celebrity & invited guest' : guestType === 'vip' ? 'VIP contact information' : 'Golf Participants'}</h2><p>Fields marked <b>*</b> are required. This takes about one minute.</p></div>
       <form className="contact-form" onSubmit={submit}>
         {guestType === 'celebrity' ? <>
           {field('Your name (celebrity or invited guest)', 'guestName', { required: true, autoComplete: 'name' })}
